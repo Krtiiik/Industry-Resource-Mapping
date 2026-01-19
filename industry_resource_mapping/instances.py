@@ -1,13 +1,13 @@
 from dataclasses import dataclass
-from typing import Collection, Mapping, Tuple, TypeAlias
+import typing
 
 from psplib_editor.utils import hidden_field
 
 
-T_ArticleId: TypeAlias = str
-T_ProviderId: TypeAlias = str
-T_DemandId: TypeAlias = str
-T_ArticleProductionId: TypeAlias = str
+T_ArticleId: typing.TypeAlias = str
+T_ProviderId: typing.TypeAlias = str
+T_DemandId: typing.TypeAlias = str
+T_ArticleProductionId: typing.TypeAlias = str
 
 
 @dataclass
@@ -57,7 +57,7 @@ class Demand:
 class ArticleProduction:
     id: T_ArticleProductionId
     article: T_ArticleId
-    requirements: Collection[Tuple[T_ArticleId, int]]
+    requirements: typing.Collection[typing.Tuple[T_ArticleId, int]]
     duration: int
 
     def __hash__(self):
@@ -72,20 +72,20 @@ class ArticleProduction:
 @dataclass
 class MappingInstance:
     name: str
-    articles: Collection[Article]
-    demands: Collection[Demand]
-    providers: Collection[Provider]
-    article_productions: Collection[ArticleProduction]
+    articles: typing.Collection[Article]
+    demands: typing.Collection[Demand]
+    providers: typing.Collection[Provider]
+    article_productions: typing.Collection[ArticleProduction]
 
     _data_built: bool = hidden_field(default=False)
-    _articles_by_id: Mapping[T_ArticleId, Article] = hidden_field()
-    _article_productions_by_article: Mapping[T_ArticleId, ArticleProduction] = hidden_field()
+    _articles_by_id: typing.Mapping[T_ArticleId, Article] = hidden_field()
+    _article_productions_by_article: typing.Mapping[T_ArticleId, ArticleProduction] = hidden_field()
 
     def __init__(self, name: str,
-                 articles: Collection[Article],
-                 demands: Collection[Demand],
-                 providers: Collection[Provider],
-                 article_productions: Collection[ArticleProduction],
+                 articles: typing.Collection[Article],
+                 demands: typing.Collection[Demand],
+                 providers: typing.Collection[Provider],
+                 article_productions: typing.Collection[ArticleProduction],
                  build_data: bool = False):
         self.name = name
         self.articles = articles
@@ -97,11 +97,11 @@ class MappingInstance:
             self._build_data_if_needed()
 
     @property
-    def articles_by_id(self) -> Mapping[T_ArticleId, Article]:
+    def articles_by_id(self) -> typing.Mapping[T_ArticleId, Article]:
         self._build_data_if_needed()
         return self._articles_by_id
 
-    def productions_for_article(self) -> Mapping[T_ArticleId, Collection[ArticleProduction]]:
+    def productions_for_article(self) -> typing.Mapping[T_ArticleId, typing.Collection[ArticleProduction]]:
         self._build_data_if_needed()
         return self._article_productions_by_article
 
@@ -111,3 +111,30 @@ class MappingInstance:
 
         self._articles_by_id = {article.id: article for article in self.articles}
         self._data_built = True
+
+# Result ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@dataclass
+class Mapping:
+    provider: T_ProviderId
+    demand: T_DemandId
+    amount: int
+
+    def __hash__(self):
+        return hash((self.provider, self.demand))
+
+    def __eq__(self, other):
+        if isinstance(other, Mapping):
+            # this is enough as we should only want a single mapping between the two
+            return (
+                self.provider == other.provider
+                and self.demand == other.demand
+            )
+
+
+@dataclass
+class MappingResult:
+    instance: MappingInstance
+    demands: typing.Collection[Demand]
+    providers: typing.Collection[Provider]
+    mappings: typing.Collection[Mapping]

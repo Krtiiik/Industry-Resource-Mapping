@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import typing
 
@@ -28,6 +29,7 @@ class Provider:
     id: T_ProviderId
     article: T_ArticleId
     amount: int
+    origin: ArticleProduction | None = None
 
     def __hash__(self):
         return hash(self.id)
@@ -43,6 +45,7 @@ class Demand:
     id: T_DemandId
     article: T_ArticleId
     amount: int
+    origin: ArticleProduction | None = None
 
     def __hash__(self):
         return hash(self.id)

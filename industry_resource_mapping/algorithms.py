@@ -13,14 +13,14 @@ def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResul
     def not_empty(): return len(demands) > 0
     def construct_id(_prefix, _id):
         return f"{id_prefix}{_prefix}{_id}"
-    def new_provider(_article, _amount):
+    def new_provider(_article, _amount, _article_production):
         nonlocal id_providers
         id_providers += 1
-        return Provider(construct_id("P", id_providers), _article, _amount)
-    def new_demand(_article, _amount):
+        return Provider(construct_id("P", id_providers), _article, _amount, _article_production)
+    def new_demand(_article, _amount, _article_production):
         nonlocal id_demands
         id_demands += 1
-        return Demand(construct_id("D", id_demands), _article, _amount)
+        return Demand(construct_id("D", id_demands), _article, _amount, _article_production)
 
     demands_satisfied = []
     providers = []
@@ -38,10 +38,10 @@ def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResul
             for requirement in article_production.requirements:
                 required_article, required_amount = requirement
                 required_amount *= demand.amount
-                push(new_demand(required_article, required_amount))
+                push(new_demand(required_article, required_amount, article_production))
 
             # create a provider of the demanded produced article
-            provider = new_provider(article, demand.amount)
+            provider = new_provider(article, demand.amount, article_production)
             providers.append(provider)
             mapping = Mapping(provider.id, demand.id, demand.amount)
             mappings.append(mapping)

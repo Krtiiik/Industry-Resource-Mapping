@@ -101,7 +101,9 @@ class MappingInstance:
         self._build_data_if_needed()
         return self._articles_by_id
 
-    def productions_for_article(self) -> typing.Mapping[T_ArticleId, typing.Collection[ArticleProduction]]:
+    @property
+    def article_productions_by_article(self) -> typing.Mapping[T_ArticleId, ArticleProduction]:
+        # TODO this might need to be a collection, however, for starters, a single production is assumed
         self._build_data_if_needed()
         return self._article_productions_by_article
 
@@ -109,7 +111,10 @@ class MappingInstance:
         if self._data_built:
             return
 
-        self._articles_by_id = {article.id: article for article in self.articles}
+        self._articles_by_id = {article.id: article
+                                for article in self.articles}
+        self._article_productions_by_article = {a_production.article: a_production
+                                                for a_production in self.article_productions}
         self._data_built = True
 
 # Result ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

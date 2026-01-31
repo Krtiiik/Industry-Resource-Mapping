@@ -38,10 +38,10 @@ def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResul
             for requirement in article_production.requirements:
                 required_article, required_amount = requirement
                 required_amount *= demand.amount
-                push(new_demand(required_article, required_amount, article_production))
+                push(new_demand(required_article, required_amount, article_production.id))
 
             # create a provider of the demanded produced article
-            provider = new_provider(article, demand.amount, article_production)
+            provider = new_provider(article, demand.amount, article_production.id)
             providers.append(provider)
             mapping = Mapping(provider.id, demand.id, demand.amount)
             mappings.append(mapping)

@@ -29,7 +29,7 @@ class Provider:
     id: T_ProviderId
     article: T_ArticleId
     amount: int
-    origin: ArticleProduction | None = None
+    origin: T_ArticleProductionId | None = None
 
     def __hash__(self):
         return hash(self.id)
@@ -45,7 +45,7 @@ class Demand:
     id: T_DemandId
     article: T_ArticleId
     amount: int
-    origin: ArticleProduction | None = None
+    origin: T_ArticleProductionId | None = None
 
     def __hash__(self):
         return hash(self.id)

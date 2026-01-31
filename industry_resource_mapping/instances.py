@@ -4,6 +4,8 @@ import typing
 
 from psplib_editor.utils import hidden_field
 
+from industry_resource_mapping.utils import groupby
+
 
 T_ArticleId: typing.TypeAlias = str
 T_ProviderId: typing.TypeAlias = str
@@ -142,7 +144,46 @@ class Mapping:
 
 @dataclass
 class MappingResult:
+    name: str
     instance: MappingInstance
     demands: typing.Collection[Demand]
     providers: typing.Collection[Provider]
     mappings: typing.Collection[Mapping]
+
+    _data_built: bool = hidden_field(default=False)
+    _demands_by_origin: typing.Mapping[T_ArticleProductionId, typing.Collection[Demand]]
+    _providers_by_origin: typing.Mapping[T_ArticleProductionId, typing.Collection[Provider]]
+
+    def __init__(self, name: str,
+                 instance: MappingInstance,
+                 demands: typing.Collection[Demand],
+                 providers: typing.Collection[Provider],
+                 mappings: typing.Collection[Mapping],
+                 build_data: bool = False):
+        self.name = name
+        self.instance = instance
+        self.demands = demands
+        self.providers = providers
+        self.mappings = mappings
+
+        if build_data:
+            self._build_data_if_needed
+
+    @property
+    def demands_by_origin(self) -> typing.Mapping[T_ArticleProductionId, typing.Collection[Demand]]:
+        self._build_data_if_needed()
+        return self._demands_by_origin
+
+    @property
+    def providers_by_origin(self) -> typing.Mapping[T_ArticleProductionId, typing.Collection[Provider]]:
+        self._build_data_if_needed()
+        return self._providers_by_origin
+
+    def _build_data_if_needed(self):
+        if self._data_built:
+            return
+
+        self._demands_by_origin = groupby(self.demands, lambda d: d.origin)
+        self._providers_by_origin = groupby(self.providers, lambda p: p.origin)
+
+        self._data_built = True

@@ -2,10 +2,11 @@ from typing import Iterable, Literal, Tuple
 
 import matplotlib.artist
 import matplotlib.axes
+from matplotlib.collections import PathCollection
 from matplotlib.path import Path
 import matplotlib.patches
 import matplotlib.text
-from matplotlib.collections import PathCollection
+import matplotlib.transforms
 
 from industry_resource_mapping.instances import MappingResult
 from industry_resource_mapping.output.utils import points_on_circle
@@ -37,6 +38,10 @@ class DemandProperties:
     text_margin_horizontal: float = 0.1
     article_offset: TLoc = (0.1, 0.1)
     amount_offset: TLoc = (0.1, -1 + 0.1)
+
+
+class MappingProperties:
+    arrow_width: float = 5.0
 
 # Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -130,7 +135,7 @@ def _text_in_circle(text: str,
 
 def demand(loc: TLoc, article: str, amount: int,
            ax: matplotlib.axes.Axes = None,
-           ) -> list[matplotlib.patches.artist.Artist]:
+           ) -> tuple[TLoc, list[matplotlib.artist.Artist]]:
     amount_str = str(amount)
 
     width = (max(len(article), len(amount_str)) * TextPathProperties.letter_width) + (2*DemandProperties.text_margin_horizontal)
@@ -151,7 +156,7 @@ def demand(loc: TLoc, article: str, amount: int,
                                  article,
                                  size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
         matplotlib.text.TextPath(loc_amount,
-                                 str(amount),
+                                 amount_str,
                                  size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
     ]
 
@@ -163,12 +168,14 @@ def demand(loc: TLoc, article: str, amount: int,
 
     if ax:
         add_artists(ax, artists)
-    return artists
+
+    anchor = loc
+    return anchor, artists
 
 
 def producer(loc: TLoc, article: str, amount: int,
              ax: matplotlib.axes.Axes = None,
-             ) -> list[matplotlib.patches.artist.Artist]:
+             ) -> tuple[TLoc, list[matplotlib.artist.Artist]]:
     amount_str = str(amount)
 
     width = max(len(article), len(amount_str)) * TextPathProperties.letter_width + 2*ProviderProperties.text_margin_horizontal
@@ -178,13 +185,42 @@ def producer(loc: TLoc, article: str, amount: int,
                                  article,
                                  size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
         matplotlib.text.TextPath(loc_offset(loc, ProviderProperties.amount_offset),
-                                 str(amount),
+                                 amount_str,
                                  size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
     ]
 
     artists = [
         matplotlib.patches.PathPatch(_box(loc_offset(loc, (0, -(ProviderProperties.height/2))), width, ProviderProperties.height),
                                      color="green"),
+        PathCollection(paths, color="black"),
+    ]
+
+    if ax:
+        add_artists(ax, artists)
+
+    anchor = loc_offset(loc, (width, 0))
+    return anchor, artists
+
+
+def mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
+            ax: matplotlib.axes.Axes = None,
+            ) -> list[matplotlib.artist.Artist]:
+    amount_str = str(amount)
+
+    provider_x, provider_y = provider
+    demand_x, demand_y = demand
+    arrow_dx = demand_x - provider_x
+    arrow_dy = demand_y - provider_y
+
+    paths = [
+        # TODO rotate with arrow, if needed
+        matplotlib.text.TextPath(loc_offset(provider, (arrow_dx/2, arrow_dy/2)),
+                                 amount_str,
+                                 size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
+    ]
+
+    artists = [
+        matplotlib.patches.Arrow(provider_x, provider_y, arrow_dx, arrow_dy, width=MappingProperties.arrow_width),
         PathCollection(paths, color="black"),
     ]
 
@@ -198,4 +234,9 @@ def plot_mapping_result(mapping_result: MappingResult):
     # - draw demands as red rectangles [[===]]
     # - draw providers as green semicircles [D]
     # - Mappings between corresponding demands and providers as lines
-    ...
+
+    origins_providers = mapping_result.providers_by_origin.keys()
+    origins_demands = mapping_result.demands_by_origin.keys()
+    origins_both = origins_providers & origins_demands
+    origins_just_providers = origins_providers - origins_both
+    origins_just_demands = origins_demands - origins_both

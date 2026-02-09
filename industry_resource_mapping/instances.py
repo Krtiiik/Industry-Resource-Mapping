@@ -197,7 +197,7 @@ class MappingResult:
 
         self._demands_by_origin = groupby(self.demands, lambda d: d.origin)
         self._providers_by_origin = groupby(self.providers, lambda p: p.origin)
-        self._demands_origin = {demand.origin for demand in self.demands}
-        self._providers_origin = {provider.origin for provider in self.providers}
+        self._demands_origin = {demand.id: demand.origin for demand in self.demands}
+        self._providers_origin = {provider.id: provider.origin for provider in self.providers}
 
         self._data_built = True

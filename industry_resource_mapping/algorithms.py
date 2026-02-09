@@ -1,6 +1,12 @@
 from .instances import Demand, Mapping, MappingInstance, MappingResult, Provider
 
 
+def _plan_name(instance_name: str, fmt: str = None):
+    if fmt is None:
+        fmt = "{instance_name}.plan"
+    return fmt.format(instance_name, instance_name=instance_name)
+
+
 def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResult:
     # Assuming no other plan-ids are present
     id_prefix = "[Plan]"
@@ -48,4 +54,4 @@ def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResul
 
         demands_satisfied.append(demand)
 
-    return MappingResult(instance, demands_satisfied, providers, mappings)
+    return MappingResult(_plan_name(instance.name), instance, demands_satisfied, providers, mappings)

@@ -1,3 +1,4 @@
+from typing import Iterable
 import numpy as np
 
 
@@ -22,3 +23,7 @@ def points_on_circle(center: tuple[float, float],
         ys = ys[1:]
         rots = rots[1:]
     return xs, ys, rots
+
+
+def points_line_around(center: float, count: int, distance: float) -> Iterable[float]:
+    return (np.arange(count) * distance) + (center - (count * distance / 2))

@@ -1,15 +1,17 @@
 from typing import Iterable, Literal, Tuple
 
+from matplotlib import pyplot as plt
 import matplotlib.artist
 import matplotlib.axes
 from matplotlib.collections import PathCollection
 from matplotlib.path import Path
 import matplotlib.patches
 import matplotlib.text
-import matplotlib.transforms
+import networkx as nx
 
-from industry_resource_mapping.instances import MappingResult
-from industry_resource_mapping.output.utils import points_on_circle
+from ..graphs import build_mapping_graph, is_virtual_node
+from ..instances import MappingResult
+from ..output.utils import points_line_around, points_on_circle
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -133,7 +135,7 @@ def _text_in_circle(text: str,
 
 # Plotting ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def demand(loc: TLoc, article: str, amount: int,
+def plot_demand(loc: TLoc, article: str, amount: int,
            ax: matplotlib.axes.Axes = None,
            ) -> tuple[TLoc, list[matplotlib.artist.Artist]]:
     amount_str = str(amount)
@@ -173,7 +175,7 @@ def demand(loc: TLoc, article: str, amount: int,
     return anchor, artists
 
 
-def producer(loc: TLoc, article: str, amount: int,
+def plot_producer(loc: TLoc, article: str, amount: int,
              ax: matplotlib.axes.Axes = None,
              ) -> tuple[TLoc, list[matplotlib.artist.Artist]]:
     amount_str = str(amount)
@@ -202,7 +204,7 @@ def producer(loc: TLoc, article: str, amount: int,
     return anchor, artists
 
 
-def mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
+def plot_mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
             ax: matplotlib.axes.Axes = None,
             ) -> list[matplotlib.artist.Artist]:
     amount_str = str(amount)
@@ -234,9 +236,49 @@ def plot_mapping_result(mapping_result: MappingResult):
     # - draw demands as red rectangles [[===]]
     # - draw providers as green semicircles [D]
     # - Mappings between corresponding demands and providers as lines
-
     origins_providers = mapping_result.providers_by_origin.keys()
     origins_demands = mapping_result.demands_by_origin.keys()
     origins_both = origins_providers & origins_demands
     origins_just_providers = origins_providers - origins_both
     origins_just_demands = origins_demands - origins_both
+
+    graph = build_mapping_graph(mapping_result)
+
+    layers = {}
+    for i_layer, layer in enumerate(nx.topological_generations(graph)):
+        layers[i_layer] = sorted(layer)
+
+    pos = nx.multipartite_layout(graph, subset_key=layers)
+    for n in pos.keys():
+        pos[n] *= 10
+
+    f = plt.figure()
+    ax = f.gca()
+    anchors_demands = {}
+    anchors_providers = {}
+    for node in pos.keys():
+        x, y = pos[node]
+        origin = node if (not is_virtual_node(node)) else None
+
+        demands = mapping_result.demands_by_origin.get(origin)
+        if demands:
+            ys = points_line_around(y, len(demands), DemandProperties.height)
+            for demand, dy in zip(demands, ys):
+                anchor, _ = plot_demand((x, dy), demand.article, demand.amount, ax=ax)
+                anchors_demands[demand.id] = anchor
+
+        providers = mapping_result.providers_by_origin.get(origin)
+        if providers:
+            ys = points_line_around(y, len(providers), ProviderProperties.height)
+            for provider, py in zip(providers, ys):
+                anchor, _ = plot_producer((x, py), provider.article, provider.amount, ax=ax)
+                anchors_providers[provider.id] = anchor
+
+    for mapping in mapping_result.mappings:
+        loc_provider = anchors_providers[mapping.provider]
+        loc_demand = anchors_demands[mapping.demand]
+        plot_mapping(loc_provider, loc_demand, mapping.amount, ax=ax)
+
+    ax.set_xlim(min(p[0] for p in pos.values()), max(p[0] for p in pos.values()))
+    ax.set_ylim(min(p[1] for p in pos.values()), max(p[1] for p in pos.values()))
+    ax.axis("equal")

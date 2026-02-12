@@ -11,6 +11,7 @@ T_ArticleId: typing.TypeAlias = str
 T_ProviderId: typing.TypeAlias = str
 T_DemandId: typing.TypeAlias = str
 T_ArticleProductionId: typing.TypeAlias = str
+T_Time: typing.TypeAlias = int
 
 
 @dataclass
@@ -31,6 +32,7 @@ class Provider:
     id: T_ProviderId
     article: T_ArticleId
     amount: int
+    release_date: T_Time | None = None
     origin: T_ArticleProductionId | None = None
 
     def __hash__(self):
@@ -47,6 +49,7 @@ class Demand:
     id: T_DemandId
     article: T_ArticleId
     amount: int
+    duedate: T_Time | None = None
     origin: T_ArticleProductionId | None = None
 
     def __hash__(self):

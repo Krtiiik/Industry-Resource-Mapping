@@ -44,6 +44,7 @@ class DemandProperties:
 
 class MappingProperties:
     arrow_width: float = 5.0
+    amount_offset: TLoc = (0., -0.35)
 
 # Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -216,7 +217,8 @@ def plot_mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
 
     paths = [
         # TODO rotate with arrow, if needed
-        matplotlib.text.TextPath(loc_offset(provider, (arrow_dx/2, arrow_dy/2)),
+        matplotlib.text.TextPath(loc_offset(loc_offset(provider, (arrow_dx/2, arrow_dy/2)),
+                                            MappingProperties.amount_offset),
                                  amount_str,
                                  size=TextPathProperties.font_size, prop=TextPathProperties.font_properties),
     ]

@@ -1,4 +1,4 @@
-from industry_resource_mapping.instances import MappingResult
+from industry_resource_mapping.instances.data import MappingResult
 
 
 def print_mapping_result(mapping_result: MappingResult):

@@ -1,7 +1,7 @@
 from typing import Any
 import networkx as nx
 
-from .instances import MappingResult
+from .instances.data import MappingResult
 
 
 def build_mapping_graph(mapping_result: MappingResult) -> nx.DiGraph:

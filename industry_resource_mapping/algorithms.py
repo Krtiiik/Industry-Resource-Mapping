@@ -3,7 +3,7 @@ from collections import defaultdict, deque, namedtuple
 from dataclasses import dataclass
 from typing import Callable, ClassVar, Collection, Generator, Iterable, TypeAlias
 
-from .instances import Article, Demand, Mapping, MappingInstance, MappingResult, Provider, T_ArticleId, T_ArticleProductionId
+from .instances.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider, T_ArticleId, T_ArticleProductionId
 
 
 def _plan_name(instance_name: str, fmt: str = None):

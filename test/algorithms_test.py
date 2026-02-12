@@ -1,7 +1,7 @@
 import unittest
 
 from industry_resource_mapping.algorithms import plan_production_ignoring_existing
-from industry_resource_mapping.instances import Article, ArticleProduction, Demand, MappingInstance
+from industry_resource_mapping.instances.data import Article, ArticleProduction, Demand, MappingInstance
 
 
 class plan_production_ignoring_existing_Tests(unittest.TestCase):

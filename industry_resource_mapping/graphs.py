@@ -2,21 +2,21 @@ from typing import Any
 import networkx as nx
 
 from .instances.data import MappingResult
+from .utils import IdManager
 
 
 def build_mapping_graph(mapping_result: MappingResult) -> nx.DiGraph:
     """
     Builds a graph for a given mapping result.
-    Vertices are 
+    Vertices are providers and demands, edges are mappings from providers to demands.
+    TODO
     """
     providers_origin = mapping_result.providers_origin
     demands_origin = mapping_result.demands_origin
 
-    virtual_node_counter = 0
+    virtual_node_ids = IdManager(lambda id: f"Virtual{str(id)}")
     def virtual_node():
-        nonlocal virtual_node_counter
-        virtual_node_counter -= 1
-        return virtual_node_counter
+        return virtual_node_ids.new()
 
     edges = []
     for mapping in mapping_result.mappings:
@@ -32,4 +32,4 @@ def build_mapping_graph(mapping_result: MappingResult) -> nx.DiGraph:
 
 
 def is_virtual_node(node: Any) -> bool:
-    return isinstance(node, int) and node < 0
+    return isinstance(node, str) and node.startswith("Virtual")

@@ -1,7 +1,9 @@
 import abc
 from collections import defaultdict, deque, namedtuple
 from dataclasses import dataclass
-from typing import Callable, ClassVar, Collection, Generator, Iterable, TypeAlias
+from typing import ClassVar, Collection, Generator, Iterable, TypeAlias
+
+from industry_resource_mapping.utils import IdManager
 
 from .instances.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider, T_ArticleId, T_ArticleProductionId
 
@@ -60,24 +62,6 @@ def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResul
         demands_satisfied.append(demand)
 
     return MappingResult(_plan_name(instance.name), instance, demands_satisfied, providers, mappings)
-
-# Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class IdManager[T]:
-    def __init__(self, format_f: Callable[[int], T]):
-        self._format_f = format_f
-        self._counter = 0
-
-    def new(self) -> T:
-        self._counter += 1
-        return self._format_f(self._counter)
-
-    def reset(self):
-        self._counter = 0
-
-    @property
-    def counter(self) -> int:
-        return self._counter
 
 # Errors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

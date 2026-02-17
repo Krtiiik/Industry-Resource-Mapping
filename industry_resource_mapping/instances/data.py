@@ -87,6 +87,8 @@ class MappingInstance:
 
     _data_built: bool = hidden_field(default=False)
     _articles_by_id: typing.Mapping[T_ArticleId, Article] = hidden_field()
+    _demands_by_id: typing.Mapping[T_DemandId, Demand] = hidden_field()
+    _providers_by_id: typing.Mapping[T_ProviderId, Provider] = hidden_field()
     _article_productions_by_article: typing.Mapping[T_ArticleId, ArticleProduction] = hidden_field()
 
     def __init__(self, name: str,
@@ -110,6 +112,16 @@ class MappingInstance:
         return self._articles_by_id
 
     @property
+    def demands_by_id(self) -> typing.Mapping[T_DemandId, Demand]:
+        self._build_data_if_needed()
+        return self._demands_by_id
+
+    @property
+    def providers_by_id(self) -> typing.Mapping[T_ProviderId, Provider]:
+        self._build_data_if_needed()
+        return self._providers_by_id
+
+    @property
     def article_productions_by_article(self) -> typing.Mapping[T_ArticleId, ArticleProduction]:
         # TODO this might need to be a collection, however, for starters, a single production is assumed
         self._build_data_if_needed()
@@ -119,8 +131,9 @@ class MappingInstance:
         if self._data_built:
             return
 
-        self._articles_by_id = {article.id: article
-                                for article in self.articles}
+        self._articles_by_id = {article.id: article for article in self.articles}
+        self._demands_by_id = {demand.id: demand for demand in self.demands}
+        self._providers_by_id = {provider.id: provider for provider in self.providers}
         self._article_productions_by_article = {a_production.article: a_production
                                                 for a_production in self.article_productions}
         self._data_built = True

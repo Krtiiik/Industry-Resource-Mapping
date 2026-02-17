@@ -42,3 +42,16 @@ class IdManager[T]:
     @property
     def counter(self) -> int:
         return self._counter
+
+
+def minmax[T](iterable: Iterable[T], default_min: T = None, default_max: T = None) -> tuple[T, T]:
+    """
+    Returns the minimum and maximum of a given iterable.
+    """
+    min_val, max_val = default_min, default_max
+    for item in iterable:
+        if min_val is None or item < min_val:
+            min_val = item
+        if max_val is None or item > max_val:
+            max_val = item
+    return min_val, max_val

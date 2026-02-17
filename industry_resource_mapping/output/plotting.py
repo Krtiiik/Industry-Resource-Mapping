@@ -12,6 +12,7 @@ import networkx as nx
 from ..graphs import build_mapping_graph, is_virtual_node
 from ..instances.data import MappingResult
 from ..output.utils import points_line_around, points_on_circle
+from ..utils import minmax
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -281,6 +282,6 @@ def plot_mapping_result(mapping_result: MappingResult):
         loc_demand = anchors_demands[mapping.demand]
         plot_mapping(loc_provider, loc_demand, mapping.amount, ax=ax)
 
-    ax.set_xlim(min(p[0] for p in pos.values()), max(p[0] for p in pos.values()))
-    ax.set_ylim(min(p[1] for p in pos.values()), max(p[1] for p in pos.values()))
+    ax.set_xlim(*minmax((p[0] for p in pos.values()), default_min=0, default_max=1))
+    ax.set_ylim(*minmax((p[1] for p in pos.values()), default_min=0, default_max=1))
     ax.axis("equal")

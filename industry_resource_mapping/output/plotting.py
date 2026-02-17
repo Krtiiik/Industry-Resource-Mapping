@@ -7,6 +7,7 @@ from matplotlib.collections import PathCollection
 from matplotlib.path import Path
 import matplotlib.patches
 import matplotlib.text
+import matplotlib.lines
 import networkx as nx
 
 from ..graphs import build_mapping_graph, is_virtual_node
@@ -44,7 +45,7 @@ class DemandProperties:
 
 
 class MappingProperties:
-    arrow_width: float = 5.0
+    line_width: float = 1.0
     amount_offset: TLoc = (0., -0.35)
 
 # Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -225,7 +226,8 @@ def plot_mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
     ]
 
     artists = [
-        matplotlib.patches.Arrow(provider_x, provider_y, arrow_dx, arrow_dy, width=MappingProperties.arrow_width),
+        # matplotlib.patches.Arrow(provider_x, provider_y, arrow_dx, arrow_dy, width=MappingProperties.arrow_width),
+        matplotlib.lines.Line2D((provider_x, demand_x), (provider_y, demand_y), linewidth=MappingProperties.line_width),
         PathCollection(paths, color="black"),
     ]
 
@@ -245,6 +247,7 @@ def plot_mapping_result(mapping_result: MappingResult):
     origins_just_providers = origins_providers - origins_both
     origins_just_demands = origins_demands - origins_both
 
+    mapping_instance = mapping_result.instance
     graph = build_mapping_graph(mapping_result)
 
     layers = {}
@@ -253,29 +256,40 @@ def plot_mapping_result(mapping_result: MappingResult):
 
     pos = nx.multipartite_layout(graph, subset_key=layers)
     for n in pos.keys():
-        pos[n] *= 10
+        pos[n] *= 100
 
     f = plt.figure()
     ax = f.gca()
     anchors_demands = {}
     anchors_providers = {}
     for node in pos.keys():
-        x, y = pos[node]
-        origin = node if (not is_virtual_node(node)) else None
+        if is_virtual_node(node):
+            provider_id, demand_id = graph.graph["virtual_nodes"][node]
+            if provider_id:
+                provider = mapping_instance.providers_by_id[provider_id]
+                anchor, _ = plot_producer(pos[node], provider.article, provider.amount, ax=ax)
+                anchors_providers[provider_id] = anchor
+            if demand_id:
+                demand = mapping_instance.demands_by_id[demand_id]
+                anchor, _ = plot_demand(pos[node], demand.article, demand.amount, ax=ax)
+                anchors_demands[demand_id] = anchor
+        else:  # not virtual node
+            x, y = pos[node]
+            origin = node
 
-        demands = mapping_result.demands_by_origin.get(origin)
-        if demands:
-            ys = points_line_around(y, len(demands), DemandProperties.height)
-            for demand, dy in zip(demands, ys):
-                anchor, _ = plot_demand((x, dy), demand.article, demand.amount, ax=ax)
-                anchors_demands[demand.id] = anchor
+            demands = mapping_result.demands_by_origin.get(origin, None)
+            if demands:
+                ys = points_line_around(y, len(demands), DemandProperties.height)
+                for demand_id, dy in zip(demands, ys):
+                    anchor, _ = plot_demand((x, dy), demand_id.article, demand_id.amount, ax=ax)
+                    anchors_demands[demand_id.id] = anchor
 
-        providers = mapping_result.providers_by_origin.get(origin)
-        if providers:
-            ys = points_line_around(y, len(providers), ProviderProperties.height)
-            for provider, py in zip(providers, ys):
-                anchor, _ = plot_producer((x, py), provider.article, provider.amount, ax=ax)
-                anchors_providers[provider.id] = anchor
+            providers = mapping_result.providers_by_origin.get(origin, None)
+            if providers:
+                ys = points_line_around(y, len(providers), ProviderProperties.height)
+                for provider_id, py in zip(providers, ys):
+                    anchor, _ = plot_producer((x, py), provider_id.article, provider_id.amount, ax=ax)
+                    anchors_providers[provider_id.id] = anchor
 
     for mapping in mapping_result.mappings:
         loc_provider = anchors_providers[mapping.provider]
@@ -285,3 +299,5 @@ def plot_mapping_result(mapping_result: MappingResult):
     ax.set_xlim(*minmax((p[0] for p in pos.values()), default_min=0, default_max=1))
     ax.set_ylim(*minmax((p[1] for p in pos.values()), default_min=0, default_max=1))
     ax.axis("equal")
+
+    plt.show()

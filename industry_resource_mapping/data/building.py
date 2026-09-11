@@ -5,8 +5,9 @@ import networkx as nx
 from psplib_editor.graphs import build_instance_graph
 from psplib_editor.instances import ProblemInstance, Job, T_JobId
 
-from .data import Article, ArticleProduction, Demand, MappingInstance, Provider, T_ArticleId
-from ..utils import range_randomizer_function
+from industry_resource_mapping.data.entities import Article, ArticleProduction, Demand, Provider, T_ArticleId
+from industry_resource_mapping.data.instances import MappingInstance
+from industry_resource_mapping.utils import range_randomizer_function
 
 
 class Naming:

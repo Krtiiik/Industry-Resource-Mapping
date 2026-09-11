@@ -11,7 +11,7 @@ import matplotlib.lines
 import networkx as nx
 
 from ..graphs import build_mapping_graph, is_virtual_node
-from ..instances.data import MappingResult
+from ..data import MappingResult
 from ..output.utils import points_line_around, points_on_circle
 from ..utils import minmax
 

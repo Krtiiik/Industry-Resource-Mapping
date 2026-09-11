@@ -1,7 +1,7 @@
 from typing import Any
 import networkx as nx
 
-from .instances.data import Demand, MappingResult, Provider
+from .data import Demand, MappingResult, Provider
 from .utils import IdManager
 
 

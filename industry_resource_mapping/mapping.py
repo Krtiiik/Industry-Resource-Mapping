@@ -1,11 +1,12 @@
 import abc
-from collections import defaultdict, deque, namedtuple
+from collections import defaultdict, deque
 from dataclasses import dataclass
-from typing import ClassVar, Collection, Generator, Iterable, TypeAlias
+from typing import ClassVar, Collection, Iterable
 
 from industry_resource_mapping.utils import IdManager
 
-from .instances.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider, T_ArticleId, T_ArticleProductionId
+from .data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider
+from .data.entities import T_ArticleId, T_ArticleProductionId
 
 
 def _plan_name(instance_name: str, fmt: str = None):

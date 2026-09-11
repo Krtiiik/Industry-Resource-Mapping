@@ -1,8 +1,8 @@
+# VS Code
 .vscode
 
+# Python
 __pycache__/
-.venv
-
 .Python
 build/
 develop-eggs/
@@ -22,4 +22,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Testing scripts
 test*.py
+
+# OptalCP
+optal/

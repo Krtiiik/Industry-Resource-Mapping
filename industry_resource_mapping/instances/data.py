@@ -49,7 +49,7 @@ class Demand:
     id: T_DemandId
     article: T_ArticleId
     amount: int
-    duedate: T_Time | None = None
+    due_date: T_Time | None = None
     origin: T_ArticleProductionId | None = None
 
     def __hash__(self):

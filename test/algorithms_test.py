@@ -1,6 +1,6 @@
 import unittest
 
-from industry_resource_mapping.algorithms import plan_production_ignoring_existing
+from industry_resource_mapping.mapping import plan_production_ignoring_existing
 from industry_resource_mapping.instances.data import Article, ArticleProduction, Demand, MappingInstance
 
 

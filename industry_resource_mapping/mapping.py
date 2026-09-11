@@ -14,6 +14,8 @@ def _plan_name(instance_name: str, fmt: str = None):
     return fmt.format(instance_name, instance_name=instance_name)
 
 
+# TODO this should already be reimplemented in IterativeMappingAlgorithmIgnoringExistingProviders
+# but I dont remember...
 def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResult:
     # Assuming no other plan-ids are present
     id_prefix = "[Plan]"
@@ -135,7 +137,7 @@ class ProviderAmount:
         yield self.amount
 
 
-class Iterative(MappingAlgorithm):
+class IterativeMappingAlgorithm(MappingAlgorithm):
     def __init__(self):
         super().__init__()
         self._demands_to_satisfy: deque[Demand] = None
@@ -230,6 +232,6 @@ class Iterative(MappingAlgorithm):
 
 # Iterative Ignoring Existing Providers --------------------------------------------------------------------------------
 
-class IterativeIgnoringExistingProviders(Iterative):
+class IterativeMappingAlgorithmIgnoringExistingProviders(IterativeMappingAlgorithm):
     def _find_providers(self, article, amount):
         return [], amount  # Ignoring existing providers

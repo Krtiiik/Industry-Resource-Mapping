@@ -1,11 +1,19 @@
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
 
-from industry_resource_mapping.data.entities import Demand, Mapping, Provider, T_ArticleProductionId, T_DemandId, T_JobId, T_ProviderId, T_Time
+from industry_resource_mapping.data.entities import (
+    Demand,
+    Mapping,
+    Provider,
+    T_ArticleProductionId,
+    T_DemandId,
+    T_JobId,
+    T_ProviderId,
+    T_Time,
+)
 from industry_resource_mapping.data.instances import MappingInstance, SchedulingInstance
 from industry_resource_mapping.data.utils import hidden_field
 from industry_resource_mapping.utils import groupby
-
 
 # Mapping ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

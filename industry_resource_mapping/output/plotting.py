@@ -1,30 +1,32 @@
-from typing import Iterable, Literal, Tuple
+import typing
+from collections.abc import Iterable
+from typing import Literal
 
-from matplotlib import pyplot as plt
 import matplotlib.artist
 import matplotlib.axes
-from matplotlib.collections import PathCollection
-from matplotlib.path import Path
+import matplotlib.lines
 import matplotlib.patches
 import matplotlib.text
-import matplotlib.lines
 import networkx as nx
+from matplotlib import pyplot as plt
+from matplotlib.collections import PathCollection
+from matplotlib.path import Path
 
-from ..graphs import build_mapping_graph, is_virtual_node
-from ..data import MappingResult
-from ..output.utils import points_line_around, points_on_circle
-from ..utils import minmax
+from industry_resource_mapping.data import MappingResult
+from industry_resource_mapping.data.graphs import build_mapping_graph, is_virtual_node
+from industry_resource_mapping.output.utils import points_line_around, points_on_circle
+from industry_resource_mapping.utils import minmax
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TLoc = Tuple[float, float]
+TLoc = tuple[float, float]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class TextPathProperties:
     letter_width: float = 0.602
     font_size: float = 1.0
-    font_properties = {
+    font_properties: typing.ClassVar[dict[str, typing.Any]] = {
         "family": "monospace",
         "weight": "light",
     }
@@ -87,7 +89,7 @@ def _text_in_circle(text: str,
                    num_points: int, start: float = 0, stop: float = 360,
                    start_point: bool = True, end_point: bool = False,
                    text_alignment: Literal["left", "center", "right"] = "left",
-                   font_properties: dict = None, correction: Literal[None, "odd", "even"] = None,
+                   font_properties: dict | None = None, correction: Literal["odd", "even"] | None = None,
                    ax: matplotlib.axes.Axes = None,
                    ) -> list[matplotlib.artist.Artist]:
     match correction:
@@ -207,7 +209,7 @@ def plot_producer(loc: TLoc, article: str, amount: int,
     return anchor, artists
 
 
-def plot_mapping(provider: TLoc, demand: TLoc, amount: int, label: str = None,
+def plot_mapping(provider: TLoc, demand: TLoc, amount: int, label: str | None = None,
             ax: matplotlib.axes.Axes = None,
             ) -> list[matplotlib.artist.Artist]:
     amount_str = str(amount)

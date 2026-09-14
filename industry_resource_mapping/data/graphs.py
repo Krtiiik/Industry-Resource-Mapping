@@ -1,21 +1,23 @@
 from typing import Any
+
 import networkx as nx
 
-from .data import Demand, MappingResult, Provider
-from .utils import IdManager
+from industry_resource_mapping.data.entities import Demand, Provider
+from industry_resource_mapping.data.results import MappingResult
+from industry_resource_mapping.utils import IdManager
 
 
 def build_mapping_graph(mapping_result: MappingResult) -> nx.DiGraph:
     """
     Builds a graph for a given mapping result.
     Vertices are providers and demands, edges are mappings from providers to demands.
-    TODO
+    TODO this does not work as it maps multiple different providers to the same article production
     """
     providers_origin = mapping_result.providers_origin
     demands_origin = mapping_result.demands_origin
 
     virtual_nodes = {}
-    virtual_node_ids = IdManager(lambda id: f"Virtual{str(id)}")
+    virtual_node_ids = IdManager(lambda id: f"Virtual{id!s}")
     def virtual_node(provider: Provider = None, demand: Demand = None) -> str:
         new = virtual_node_ids.new()
         virtual_nodes[new] = (provider, demand)
@@ -25,8 +27,8 @@ def build_mapping_graph(mapping_result: MappingResult) -> nx.DiGraph:
     for mapping in mapping_result.mappings:
         provider_origin = providers_origin[mapping.provider]
         demand_origin = demands_origin[mapping.demand]
-        n_provider = provider_origin if (provider_origin is not None) else virtual_node(provider=mapping.provider)
-        n_demand = demand_origin if (demand_origin is not None) else virtual_node(demand=mapping.demand)
+        n_provider = provider_origin or virtual_node(provider=mapping.provider)
+        n_demand = demand_origin or virtual_node(demand=mapping.demand)
         edges.append((n_provider, n_demand, mapping))
 
     graph = nx.DiGraph()

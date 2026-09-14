@@ -1,70 +1,12 @@
 import abc
 from collections import defaultdict, deque
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass
-from typing import ClassVar, Collection, Iterable
+from typing import ClassVar
 
+from industry_resource_mapping.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider
+from industry_resource_mapping.data.entities import T_ArticleId, T_ArticleProductionId
 from industry_resource_mapping.utils import IdManager
-
-from .data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider
-from .data.entities import T_ArticleId, T_ArticleProductionId
-
-
-def _plan_name(instance_name: str, fmt: str = None):
-    if fmt is None:
-        fmt = "{instance_name}.plan"
-    return fmt.format(instance_name, instance_name=instance_name)
-
-
-# TODO this should already be reimplemented in IterativeMappingAlgorithmIgnoringExistingProviders
-# but I dont remember...
-def plan_production_ignoring_existing(instance: MappingInstance) -> MappingResult:
-    # Assuming no other plan-ids are present
-    id_prefix = "[Plan]"
-    id_demands = 0
-    id_providers = 0
-    demands = list(instance.demands)  # TODO priority queue based on demand properties
-
-    def pop(): return demands.pop()
-    def push(_demand): demands.append(_demand)
-    def not_empty(): return len(demands) > 0
-    def construct_id(_prefix, _id):
-        return f"{id_prefix}{_prefix}{_id}"
-    def new_provider(_article, _amount, _article_production):
-        nonlocal id_providers
-        id_providers += 1
-        return Provider(construct_id("P", id_providers), _article, _amount, _article_production)
-    def new_demand(_article, _amount, _article_production):
-        nonlocal id_demands
-        id_demands += 1
-        return Demand(construct_id("D", id_demands), _article, _amount, _article_production)
-
-    demands_satisfied = []
-    providers = []
-    mappings = []
-    while not_empty():
-        demand = pop()
-        article = demand.article
-
-        article_production = instance.article_productions_by_article.get(article, None)
-        if article_production is None:
-            # we ignore existing providers or other forms of providing articles than production, for now
-            pass
-        else:  # article production exists
-            # create demands for required articles
-            for requirement in article_production.requirements:
-                required_article, required_amount = requirement
-                required_amount *= demand.amount
-                push(new_demand(required_article, required_amount, article_production.id))
-
-            # create a provider of the demanded produced article
-            provider = new_provider(article, demand.amount, article_production.id)
-            providers.append(provider)
-            mapping = Mapping(provider.id, demand.id, demand.amount)
-            mappings.append(mapping)
-
-        demands_satisfied.append(demand)
-
-    return MappingResult(_plan_name(instance.name), instance, demands_satisfied, providers, mappings)
 
 # Errors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -125,6 +67,9 @@ class MappingAlgorithm(abc.ABC):
 
     def _name_result(self) -> str:
         return f"{self._instance.name}.plan"
+
+    def __call__(self, instance: MappingInstance):
+        return self.solve(instance)
 
 # Iterative ------------------------------------------------------------------------------------------------------------
 

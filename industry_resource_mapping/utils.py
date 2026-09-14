@@ -1,7 +1,7 @@
-from collections import defaultdict
 import functools
 import random
-from typing import Callable, Iterable
+from collections import defaultdict
+from collections.abc import Callable, Iterable
 
 
 def groupby[T, TProperty](iterable: Iterable[T], f_by: Callable[[T], TProperty]

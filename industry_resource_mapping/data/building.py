@@ -1,12 +1,16 @@
 from typing import Any, Iterable
 import typing
-import networkx as nx
+from collections.abc import Iterable
+from typing import Any
 
+import networkx as nx
 from psplib_editor.graphs import build_instance_graph
-from psplib_editor.instances import ProblemInstance, Job, T_JobId
+from psplib_editor.instances import Job, ProblemInstance, T_JobId
 
 from industry_resource_mapping.data.entities import Article, ArticleProduction, Demand, Provider, T_ArticleId
-from industry_resource_mapping.data.instances import MappingInstance
+from industry_resource_mapping.data.graphs import build_mapping_graph, is_virtual_node
+from industry_resource_mapping.data.instances import MappingInstance, SchedulingInstance
+from industry_resource_mapping.data.results import MappingResult
 from industry_resource_mapping.utils import range_randomizer_function
 
 

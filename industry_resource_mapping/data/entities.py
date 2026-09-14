@@ -1,6 +1,5 @@
-from dataclasses import dataclass
 import typing
-
+from dataclasses import dataclass
 
 T_ArticleId: typing.TypeAlias = str
 T_Time: typing.TypeAlias = int
@@ -65,7 +64,7 @@ class Demand:
 class ArticleProduction:
     id: T_ArticleProductionId
     article: T_ArticleId
-    requirements: typing.Collection[typing.Tuple[T_ArticleId, int]]
+    requirements: typing.Collection[tuple[T_ArticleId, int]]
     duration: int
 
     def __hash__(self):

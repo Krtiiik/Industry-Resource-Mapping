@@ -4,7 +4,7 @@ from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from typing import ClassVar
 
-from industry_resource_mapping.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider
+from industry_resource_mapping.data import Article, Demand, Mapping, MappingResult, Provider
 from industry_resource_mapping.data.entities import T_ArticleId, T_ArticleProductionId
 from industry_resource_mapping.utils import IdManager
 
@@ -14,7 +14,7 @@ class MappingError(Exception):
     """
     Common base class for all mapping-related exceptions.
     """
-    def __init__(self, instance: MappingInstance, *args):
+    def __init__(self, instance: MappingResult, *args):
         super().__init__(*args)
         self.instance = instance
 
@@ -23,7 +23,7 @@ class UndefinedProductionError(MappingError):
     """
     Raised when a production is required for an article but none is defined in the mapping instance.
     """
-    def __init__(self, instance: MappingInstance, article: Article, *args):
+    def __init__(self, instance: MappingResult, article: Article, *args):
         super().__init__(instance, "Mapping instance is missing defined production for a required article.")
         self.article = article
 
@@ -37,18 +37,18 @@ class MappingAlgorithm(abc.ABC):
         self._demand_id_manager = IdManager((f"{self.gen_id}D-{{}}").format)
         self._provider_id_manager = IdManager((f"{self.gen_id}P-{{}}").format)
 
-    def solve(self, instance: MappingInstance) -> MappingResult:
+    def solve(self, instance: MappingResult) -> MappingResult:
         self._init(instance)
-        result = self._solve(instance)
+        result = self._solve()
         return result
 
-    def _init(self, instance: MappingInstance):
+    def _init(self, instance: MappingResult):
         self._instance = instance
         self._demand_id_manager.reset()
         self._provider_id_manager.reset()
 
     @abc.abstractmethod
-    def _solve(self, instance: MappingInstance) -> MappingResult:
+    def _solve(self) -> MappingResult:
         ...
 
     def _new_demand(self, article_id: T_ArticleId, amount: int, origin: T_ArticleProductionId=None) -> Demand:
@@ -68,7 +68,7 @@ class MappingAlgorithm(abc.ABC):
     def _name_result(self) -> str:
         return f"{self._instance.name}.plan"
 
-    def __call__(self, instance: MappingInstance):
+    def __call__(self, instance: MappingResult) -> MappingResult:
         return self.solve(instance)
 
 # Iterative ------------------------------------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ class IterativeMappingAlgorithm(MappingAlgorithm):
             mappings.append(Mapping(provider.id, demand.id, amount))
         return mappings
 
-    def _solve(self, instance):
+    def _solve(self):
         demands = []
         providers = []
         mappings = []

@@ -4,8 +4,8 @@ from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from typing import ClassVar
 
-from industry_resource_mapping.data import Article, Demand, Mapping, MappingResult, Provider
-from industry_resource_mapping.data.entities import T_ArticleId, T_ArticleProductionId
+from industry_resource_mapping.data import Article, Demand, Mapping, MappingInstance, MappingResult, Provider
+from industry_resource_mapping.data.entities import T_ArticleId, T_ArticleProductionId, T_ProviderId
 from industry_resource_mapping.utils import IdManager
 
 # Errors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -14,7 +14,7 @@ class MappingError(Exception):
     """
     Common base class for all mapping-related exceptions.
     """
-    def __init__(self, instance: MappingResult, *args):
+    def __init__(self, instance: MappingInstance, *args):
         super().__init__(*args)
         self.instance = instance
 
@@ -23,7 +23,7 @@ class UndefinedProductionError(MappingError):
     """
     Raised when a production is required for an article but none is defined in the mapping instance.
     """
-    def __init__(self, instance: MappingResult, article: Article, *args):
+    def __init__(self, instance: MappingInstance, article: Article, *args):
         super().__init__(instance, "Mapping instance is missing defined production for a required article.")
         self.article = article
 
@@ -37,12 +37,12 @@ class MappingAlgorithm(abc.ABC):
         self._demand_id_manager = IdManager((f"{self.gen_id}D-{{}}").format)
         self._provider_id_manager = IdManager((f"{self.gen_id}P-{{}}").format)
 
-    def solve(self, instance: MappingResult) -> MappingResult:
+    def solve(self, instance: MappingInstance) -> MappingResult:
         self._init(instance)
         result = self._solve()
         return result
 
-    def _init(self, instance: MappingResult):
+    def _init(self, instance: MappingInstance):
         self._instance = instance
         self._demand_id_manager.reset()
         self._provider_id_manager.reset()
@@ -51,8 +51,10 @@ class MappingAlgorithm(abc.ABC):
     def _solve(self) -> MappingResult:
         ...
 
-    def _new_demand(self, article_id: T_ArticleId, amount: int, origin: T_ArticleProductionId=None) -> Demand:
-        return Demand(id=self._demand_id_manager.new(), article=article_id, amount=amount, origin=origin)
+    def _new_demand(self, article_id: T_ArticleId, amount: int,
+                    origin: T_ArticleProductionId=None, origin_provider: T_ProviderId=None) -> Demand:
+        return Demand(id=self._demand_id_manager.new(), article=article_id, amount=amount,
+                      origin=origin, origin_provider=origin_provider)
 
     def _new_provider(self, article_id: T_ArticleId, amount: int, origin: T_ArticleProductionId=None) -> Provider:
         return Provider(id=self._provider_id_manager.new(), article=article_id, amount=amount, origin=origin)
@@ -131,14 +133,16 @@ class IterativeMappingAlgorithm(MappingAlgorithm):
         if article_production is None:
             raise UndefinedProductionError(self._instance, article)
 
+        # create a provider of the demanded produced article
+        provider = self._new_provider(article, amount, article_production.id)
+
         # create demands for required articles
         for requirement in article_production.requirements:
             required_article, required_amount = requirement
             required_amount *= amount
-            self._q_push(self._new_demand(required_article, required_amount, article_production.id))
+            self._q_push(self._new_demand(article=required_article, amount=required_amount,
+                                          origin=article_production.id, origin_provider=provider.id))
 
-        # create a provider of the demanded produced article
-        provider = self._new_provider(article, amount, article_production.id)
         return [ProviderAmount(provider, provider.amount)]
 
     def _map_demand_providers(self, demand: Demand, providers: Iterable[ProviderAmount]) -> list[Mapping]:
@@ -155,7 +159,7 @@ class IterativeMappingAlgorithm(MappingAlgorithm):
             demand = self._q_pop()
             article = demand.article
 
-            demand_mappings = []
+            demand_mappings: list[Mapping] = []
 
             # Map existing providers
             providers_existing, amount_not_provided = self._find_providers(article, demand.amount)

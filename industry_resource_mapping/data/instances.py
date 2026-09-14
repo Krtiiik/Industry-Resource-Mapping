@@ -145,6 +145,6 @@ class SchedulingInstance:
         self._data_built = True
 
     @classmethod
-    def from_mapping_instance(cls, mapping_instance: MappingInstance) -> "SchedulingInstance":
+    def from_mapping_result(cls, mapping_result: MappingInstance) -> "SchedulingInstance":
         from industry_resource_mapping.data.building import build_scheduling_instance_from_mapping_result
-        return build_scheduling_instance_from_mapping_result(mapping_instance)
+        return build_scheduling_instance_from_mapping_result(mapping_result)

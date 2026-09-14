@@ -50,6 +50,7 @@ class Demand:
     amount: int
     due_date: T_Time | None = None
     origin: T_ArticleProductionId | None = None
+    origin_provider: T_ProviderId | None = None
 
     def __hash__(self):
         return hash(self.id)

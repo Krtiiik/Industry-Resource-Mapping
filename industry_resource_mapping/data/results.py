@@ -44,7 +44,7 @@ class MappingResult:
         self.mappings = mappings
 
         if build_data:
-            self._build_data_if_needed
+            self._build_data_if_needed()
 
     @property
     def demands_by_origin(self) -> typing.Mapping[T_ArticleProductionId, typing.Collection[Demand]]:
